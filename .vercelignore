@@ -1,0 +1,6 @@
+backend/
+frontend/
+.history/
+.env
+__pycache__/
+venv/
