@@ -3,6 +3,15 @@
   "framework": null,
   "buildCommand": "",
   "outputDirectory": "public",
+  "experimentalServices": {
+    "frontend": {
+      "routePrefix": "/"
+    },
+    "backend": {
+      "entrypoint": "backend",
+      "routePrefix": "/_/backend"
+    }
+  },
   "builds": [
     {
       "src": "api/index.py",
