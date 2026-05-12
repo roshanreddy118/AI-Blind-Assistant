@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description" content="AI Blind Assistant - Live scene narration and obstacle detection for visually impaired users">
+    <meta name="theme-color" content="#030014">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
+    <link rel="manifest" href="manifest.json">
+    <title>AI Blind Assistant</title>
+
+    <link rel="stylesheet" href="css/style.css">
+
+    <style>.skip-link{position:absolute;top:-40px;left:0;background:var(--danger);color:#fff;padding:8px;z-index:999;font-size:1.2rem}.skip-link:focus{top:0}</style>
+</head>
+<body>
+    <a href="#main" class="skip-link">Skip to assistant</a>
+
+    <!-- ARIA live regions -->
+    <div id="sr-alert" aria-live="assertive" aria-atomic="true" class="sr-only"></div>
+    <div id="sr-status" aria-live="polite" aria-atomic="true" class="sr-only"></div>
+
+    <!-- Header -->
+    <header>
+        <div class="header-row">
+            <h1 aria-label="AI Blind Assistant">
+                <span class="logo" aria-hidden="true">👁️‍🗨️</span>
+                <span>AI Blind Assistant</span>
+            </h1>
+            <button id="btn-settings" class="btn-icon" aria-label="Open settings">⚙️</button>
+        </div>
+        <p class="subtitle">Real-time AI vision • 14+ languages</p>
+    </header>
+
+    <!-- Main -->
+    <main id="main">
+
+        <!-- Camera Feed -->
+        <div class="camera-wrap" aria-hidden="true">
+            <video id="camera" autoplay playsinline muted></video>
+            <canvas id="capture-canvas"></canvas>
+            <div id="camera-status" class="camera-badge">Camera off</div>
+            <div id="scan-line" class="scanning-line" style="display:none"></div>
+            <div id="status-ring" class="status-ring" style="display:none"></div>
+        </div>
+
+        <!-- Primary Action: Big start button -->
+        <section class="action-zone" aria-label="Main controls">
+            <button id="btn-start" class="btn-mega" aria-label="Start assistant. Double tap to begin live scene narration.">
+                <span class="mega-icon" aria-hidden="true">👁️‍🗨️</span>
+                <span class="mega-label">Tap to Start</span>
+                <span class="mega-sub">Live AI Scene Narration</span>
+            </button>
+        </section>
+
+        <!-- Active Mode -->
+        <section id="active-panel" class="active-panel hidden" aria-label="Live assistant">
+
+            <!-- Scene narration -->
+            <div class="narration-box" role="log" aria-live="polite" aria-label="Scene narration">
+                <div class="narration-header">
+                    <span class="pulse-dot" aria-hidden="true"></span>
+                    <span>Live Narration</span>
+                </div>
+                <p id="narration-text" class="narration-text">Starting camera...</p>
+            </div>
+
+            <!-- Obstacle alerts -->
+            <div id="obstacle-alerts" class="obstacle-alerts" role="alert" aria-live="assertive" aria-label="Obstacle warnings"></div>
+
+            <!-- Quick Actions -->
+            <div class="quick-actions" role="toolbar" aria-label="Quick actions">
+                <button id="btn-describe" class="btn btn-primary btn-xl" aria-label="Describe what's in front of me">
+                    <span aria-hidden="true">🔍</span>
+                    <span>What's here?</span>
+                </button>
+                <button id="btn-read" class="btn btn-secondary btn-xl" aria-label="Read any visible text, signs, or labels">
+                    <span aria-hidden="true">📖</span>
+                    <span>Read text</span>
+                </button>
+                <button id="btn-ask" class="btn btn-secondary btn-xl" aria-label="Ask a question about the scene">
+                    <span aria-hidden="true">❓</span>
+                    <span>Ask AI</span>
+                </button>
+            </div>
+
+            <!-- Repeat / Stop -->
+            <div class="playback-controls">
+                <button id="btn-repeat" class="btn btn-accent btn-lg btn-block" aria-label="Repeat last narration">
+                    <span aria-hidden="true">🔊</span> Repeat Last
+                </button>
+            </div>
+
+            <button id="btn-stop" class="btn btn-danger btn-lg btn-block" aria-label="Stop assistant and camera">
+                <span aria-hidden="true">⏹️</span> Stop Assistant
+            </button>
+        </section>
+
+        <!-- Ask Question Modal -->
+        <div id="ask-modal" class="modal hidden" role="dialog" aria-label="Ask a question" aria-modal="true">
+            <div class="modal-backdrop"></div>
+            <div class="modal-body">
+                <h2>Ask about what you see</h2>
+                <div class="input-group">
+                    <label for="question-input">Your question:</label>
+                    <input type="text" id="question-input" class="text-input"
+                           placeholder="e.g. Is there a door nearby?"
+                           aria-label="Type your question">
+                </div>
+                <div class="modal-row">
+                    <button id="btn-voice-ask" class="btn btn-primary btn-lg" aria-label="Ask by voice">
+                        <span aria-hidden="true">🎤</span> Speak
+                    </button>
+                    <button id="btn-send-ask" class="btn btn-accent btn-lg" aria-label="Send question">
+                        <span aria-hidden="true">➡️</span> Ask
+                    </button>
+                </div>
+                <button id="btn-close-ask" class="btn btn-secondary btn-block" aria-label="Close">Cancel</button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="modal hidden" role="dialog" aria-label="Settings" aria-modal="true">
+        <div class="modal-backdrop"></div>
+        <div class="modal-body">
+            <h2>Settings</h2>
+
+            <div class="setting-group">
+                <h3>Voice Language</h3>
+                <select id="setting-language" class="select-input" aria-label="Select voice language">
+                    <option value="en" selected>English</option>
+                    <option value="hi">Hindi (हिन्दी)</option>
+                    <option value="ta">Tamil (தமிழ்)</option>
+                    <option value="te">Telugu (తెలుగు)</option>
+                    <option value="kn">Kannada (ಕನ್ನಡ)</option>
+                    <option value="ml">Malayalam (മലയാളം)</option>
+                    <option value="bn">Bengali (বাংলা)</option>
+                    <option value="mr">Marathi (मराठी)</option>
+                    <option value="gu">Gujarati (ગુજરાતી)</option>
+                    <option value="pa">Punjabi (ਪੰਜਾਬੀ)</option>
+                    <option value="ur">Urdu (اردو)</option>
+                    <option value="es">Spanish</option>
+                    <option value="fr">French</option>
+                    <option value="ar">Arabic</option>
+                </select>
+            </div>
+
+            <div class="setting-group">
+                <h3>Narration</h3>
+                <label class="toggle">
+                    <input type="checkbox" id="setting-auto-narrate" checked>
+                    Auto-narrate scenes continuously
+                </label>
+                <label class="toggle">
+                    <input type="checkbox" id="setting-obstacle-alerts" checked>
+                    Obstacle proximity alerts
+                </label>
+                <label class="toggle">
+                    <input type="checkbox" id="setting-haptic" checked>
+                    Vibration on obstacles
+                </label>
+            </div>
+
+            <div class="setting-group">
+                <h3>Speed</h3>
+                <label class="range-label">
+                    Scene scan interval:
+                    <span id="interval-value">3s</span>
+                </label>
+                <input type="range" id="setting-interval" min="2" max="10" value="3" step="1"
+                       aria-label="Scene scan interval in seconds">
+            </div>
+
+            <div class="setting-group">
+                <h3>Voice</h3>
+                <label class="range-label">
+                    Speech rate:
+                    <span id="rate-value">1.0x</span>
+                </label>
+                <input type="range" id="setting-rate" min="0.5" max="2" value="1" step="0.1"
+                       aria-label="Speech rate">
+            </div>
+
+            <button id="btn-close-settings" class="btn btn-primary btn-block btn-lg">Done</button>
+        </div>
+    </div>
+
+    <!-- Toasts -->
+    <div id="toasts" class="toast-container" aria-live="polite"></div>
+
+    <!-- Scripts -->
+    <script src="js/camera.js"></script>
+    <script src="js/audio.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

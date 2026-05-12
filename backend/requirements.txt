@@ -1,0 +1,13 @@
+fastapi
+uvicorn
+python-multipart
+websockets
+httpx
+pillow
+numpy
+opencv-python-headless
+gtts
+google-generativeai
+openai
+python-dotenv
+pydantic
