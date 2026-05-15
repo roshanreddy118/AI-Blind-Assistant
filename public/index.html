@@ -18,7 +18,16 @@
     <style>.skip-link{position:absolute;top:-40px;left:0;background:var(--danger);color:#fff;padding:8px;z-index:999;font-size:1.2rem}.skip-link:focus{top:0}</style>
 
     <!-- Vercel Web Analytics -->
-    <script defer src="https://cdn.vercel-insights.com/v1/script.js"></script>
+    <script>
+        window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+    </script>
+    <script defer src="/_vercel/insights/script.js"></script>
+
+    <!-- Vercel Speed Insights -->
+    <script>
+        window.si = window.si || function () { (window.siq = window.siq || []).push(arguments); };
+    </script>
+    <script defer src="/_vercel/speed-insights/script.js"></script>
 </head>
 <body>
     <a href="#main" class="skip-link">Skip to assistant</a>
