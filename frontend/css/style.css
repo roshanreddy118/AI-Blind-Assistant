@@ -944,6 +944,49 @@ input[type="range"] {
 /* ===========================================
    DESKTOP
    =========================================== */
+/* ===========================================
+   WELCOME MODAL
+   =========================================== */
+.welcome-content {
+    text-align: left;
+    color: var(--text-dim);
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+.welcome-content p {
+    margin-bottom: 0.8rem;
+}
+
+.welcome-features {
+    list-style: none;
+    padding: 0;
+    margin: 1rem 0;
+}
+
+.welcome-features li {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+}
+
+.welcome-features li:last-child {
+    border-bottom: none;
+}
+
+.welcome-features li span {
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+.welcome-tip {
+    color: var(--accent);
+    font-size: 0.9rem;
+    margin-top: 1rem;
+}
+
 @media (min-width: 768px) {
     .modal { align-items: center; padding: 20px; }
     .modal-body { border-radius: 28px; }

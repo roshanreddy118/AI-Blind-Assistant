@@ -61,6 +61,7 @@
     document.addEventListener('DOMContentLoaded', () => {
         wireUI();
         loadSettings();
+        showWelcomeIfFirstVisit();
         startVoiceCommands();
     });
 
@@ -151,6 +152,32 @@
                 e.preventDefault();
                 state.active ? stopAssistant() : startAssistant();
             }
+        });
+    }
+
+    // ---- Welcome / Onboarding ----
+
+    function showWelcomeIfFirstVisit() {
+        if (localStorage.getItem('aiblind_welcomed')) return;
+
+        const modal = el('welcome-modal');
+        if (!modal) return;
+
+        toggleModal('welcome-modal', true);
+
+        // Auto-speak the welcome message after a short delay
+        setTimeout(() => {
+            audio.speak(
+                'Welcome to AI Blind Assistant. Your AI-powered eyes. ' +
+                'This app describes scenes, reads text, detects obstacles, and answers questions, all spoken aloud. ' +
+                'Tap the Start button to begin. You can also use voice commands.'
+            );
+        }, 500);
+
+        el('btn-close-welcome')?.addEventListener('click', () => {
+            toggleModal('welcome-modal', false);
+            localStorage.setItem('aiblind_welcomed', '1');
+            audio.stop();
         });
     }
 
