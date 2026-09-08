@@ -7,6 +7,7 @@ If primary fails, falls back to the next available provider.
 import base64
 import logging
 import os
+import re
 
 logger = logging.getLogger(__name__)
 
@@ -76,8 +77,8 @@ class VisionAI:
                 api_key=api_key,
                 base_url="https://api.groq.com/openai/v1",
             )
-            self.providers.append(("groq", lambda img, prompt: self._openai_analyze(img, prompt, client, "meta-llama/llama-4-scout-17b-16e-instruct")))
-            logger.info("✓ Groq initialized (llama-4-scout-17b-16e-instruct)")
+            self.providers.append(("groq", lambda img, prompt: self._openai_analyze(img, prompt, client, "qwen/qwen3.6-27b", {"reasoning_effort": "none"})))
+            logger.info("✓ Groq initialized (qwen/qwen3.6-27b)")
         except Exception as e:
             logger.error(f"Groq init failed: {e}")
 
@@ -173,7 +174,7 @@ class VisionAI:
             logger.error(f"Gemini API error: {e}")
             raise
 
-    async def _openai_analyze(self, image_bytes: bytes, prompt: str, client=None, model=None) -> str:
+    async def _openai_analyze(self, image_bytes: bytes, prompt: str, client=None, model=None, extra=None) -> str:
         import asyncio
 
         try:
@@ -196,9 +197,17 @@ class VisionAI:
                         ],
                     }
                 ],
-                max_tokens=200,
+                max_tokens=800,  # under Groq free-tier OTPM cap (1000)
+                **(extra or {}),
             )
-            return response.choices[0].message.content.strip()
+            content = response.choices[0].message.content or ""
+            # Reasoning models (e.g. Groq's qwen) wrap thoughts in <think>...</think>.
+            # Strip them so we never read chain-of-thought aloud. Also handle an
+            # unterminated block (model ran out of tokens mid-thought): drop
+            # everything from an unclosed <think> to the end.
+            content = re.sub(r"<think>.*?</think>", "", content, flags=re.DOTALL)
+            content = re.sub(r"<think>.*$", "", content, flags=re.DOTALL)
+            return content.strip()
         except Exception as e:
             logger.error(f"API error ({model}): {e}")
             raise
