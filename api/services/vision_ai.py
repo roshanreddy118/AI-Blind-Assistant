@@ -49,7 +49,7 @@ class VisionAI:
             import google.generativeai as genai
 
             genai.configure(api_key=api_key)
-            self.gemini_model = genai.GenerativeModel("gemini-2.0-flash")
+            self.gemini_model = genai.GenerativeModel("gemini-2.5-flash")
             self.providers.append(("gemini", self._gemini_analyze))
             logger.info("✓ Gemini initialized")
         except Exception as e:
